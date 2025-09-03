@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản lý Chi tiêu Gia đình</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+        .expense-item:hover .actions {
+            opacity: 1;
+        }
+        .actions {
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 bg-gray-100 min-h-screen">
+    <div id="app" class="max-w-4xl mx-auto bg-white p-6 rounded-3xl shadow-lg">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">Quản lý Chi tiêu Gia đình</h1>
+            <p class="text-gray-500">Ghi lại và theo dõi chi tiêu của bạn cùng với người thân.</p>
+        </header>
+
+        <!-- Thêm chi tiêu -->
+        <section class="bg-gray-50 p-6 rounded-2xl mb-8 border border-gray-200">
+            <h2 id="form-title" class="text-2xl font-semibold text-gray-700 mb-4">Thêm Giao dịch mới</h2>
+            <form id="expense-form" class="space-y-4">
+                <input type="hidden" id="expense-id">
+                <div>
+                    <label for="amount" class="block text-sm font-medium text-gray-700">Số tiền (Yên Nhật)</label>
+                    <input type="number" id="amount" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all p-3">
+                </div>
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700">Mô tả</label>
+                    <input type="text" id="description" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all p-3">
+                </div>
+                <div>
+                    <label for="category" class="block text-sm font-medium text-gray-700">Nhóm chi tiêu</label>
+                    <select id="category" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all p-3">
+                        <option value="">-- Chọn nhóm --</option>
+                        <option value="Chi tiêu cố định">Chi tiêu cố định</option>
+                        <option value="Thực phẩm">Thực phẩm</option>
+                        <option value="Chi tiêu sinh hoạt khác">Chi tiêu sinh hoạt khác</option>
+                        <option value="Ăn ngoài">Ăn ngoài</option>
+                        <option value="Chi tiêu sinh hoạt của bố">Chi tiêu sinh hoạt của bố</option>
+                        <option value="Chi tiêu phát sinh của bố">Chi tiêu phát sinh của bố</option>
+                        <option value="Chi tiêu phát sinh của mẹ">Chi tiêu phát sinh của mẹ</option>
+                        <option value="Chi tiêu order của mẹ">Chi tiêu order của mẹ</option>
+                        <option value="Chi tiêu phát sinh gia đình">Chi tiêu phát sinh gia đình</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="payer" class="block text-sm font-medium text-gray-700">Người chi</label>
+                        <select id="payer" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all p-3">
+                            <option value="">-- Ai chi? --</option>
+                            <option value="Bố">Bố</option>
+                            <option value="Mẹ">Mẹ</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="source" class="block text-sm font-medium text-gray-700">Nguồn tiền</label>
+                        <select id="source" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all p-3">
+                            <option value="">-- Nguồn tiền nào? --</option>
+                            <option value="TIỀN MẶT">TIỀN MẶT</option>
+                            <option value="MECCARI">MECCARI</option>
+                            <option value="EPOS">EPOS</option>
+                            <option value="PAYPAY">PAYPAY</option>
+                            <option value="RAKUTEN">RAKUTEN</option>
+                            <option value="YUCHO">YUCHO</option>
+                            <option value="RESONA">RESONA</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label for="expense-date" class="block text-sm font-medium text-gray-700">Ngày đã chi tiêu</label>
+                    <input type="date" id="expense-date" required class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all p-3">
+                </div>
+                <button type="submit" id="submit-btn" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
+                    Thêm Giao dịch
+                </button>
+            </form>
+        </section>
+
+        <!-- Lọc Giao dịch -->
+        <section class="bg-indigo-50 p-6 rounded-2xl mb-8 border border-indigo-200 text-center">
+            <h2 class="text-2xl font-semibold text-indigo-700 mb-4">Lọc Giao dịch</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="col-span-1">
+                    <label for="start-date" class="block text-sm font-medium text-gray-700 mb-1">Từ ngày</label>
+                    <input type="date" id="start-date" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all p-3">
+                </div>
+                <div class="col-span-1">
+                    <label for="end-date" class="block text-sm font-medium text-gray-700 mb-1">Đến ngày</label>
+                    <input type="date" id="end-date" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all p-3">
+                </div>
+                <div class="col-span-1 flex flex-col justify-end">
+                    <button id="filter-btn" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
+                        Lọc
+                    </button>
+                    <button id="reset-filter-btn" class="w-full flex justify-center py-3 px-4 mt-2 border border-gray-300 rounded-xl shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-all">
+                        Xóa Bộ lọc
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tổng quan chi tiêu -->
+        <section class="bg-indigo-50 p-6 rounded-2xl mb-8 border border-indigo-200 text-center">
+            <h2 class="text-2xl font-semibold text-indigo-700 mb-4">Tổng quan Chi tiêu</h2>
+            <div id="total-summary" class="text-lg font-bold text-indigo-900 mb-4"></div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-left text-gray-700">
+                <div>
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-600">Theo Nhóm</h3>
+                    <ul id="summary-category" class="space-y-1 text-sm"></ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-600">Theo Người chi</h3>
+                    <ul id="summary-payer" class="space-y-1 text-sm"></ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-lg mb-2 text-indigo-600">Theo Nguồn tiền</h3>
+                    <ul id="summary-source" class="space-y-1 text-sm"></ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Danh sách chi tiêu -->
+        <section class="bg-gray-50 p-6 rounded-2xl border border-gray-200">
+            <h2 class="text-2xl font-semibold text-gray-700 mb-4">Lịch sử Giao dịch</h2>
+            <div id="expenses-list" class="space-y-4">
+                <p id="loading-message" class="text-center text-gray-500">Đang tải dữ liệu...</p>
+                <!-- Dữ liệu chi tiêu sẽ được thêm vào đây bởi JavaScript -->
+            </div>
+            <div id="empty-message" class="hidden text-center text-gray-500 mt-4">
+                Chưa có giao dịch nào. Hãy thêm giao dịch đầu tiên của bạn!
+            </div>
+        </section>
+
+        <!-- Modal cho thông báo lỗi -->
+        <div id="error-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-2xl bg-white">
+                <div class="mt-3 text-center">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Lỗi</h3>
+                    <div class="mt-2 px-7 py-3">
+                        <p id="error-message" class="text-sm text-gray-500"></p>
+                    </div>
+                    <div class="items-center px-4 py-3">
+                        <button id="close-modal" class="px-4 py-2 bg-indigo-500 text-white text-base font-medium rounded-2xl w-full shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Đã hiểu
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Xác nhận Xóa -->
+        <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full">
+            <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-2xl bg-white">
+                <div class="mt-3 text-center">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">Xác nhận Xóa</h3>
+                    <div class="mt-2 px-7 py-3">
+                        <p class="text-sm text-gray-500">Bạn có chắc chắn muốn xóa giao dịch này không?</p>
+                    </div>
+                    <div class="items-center px-4 py-3 space-x-4 flex justify-center">
+                        <button id="cancel-delete-btn" class="px-4 py-2 bg-gray-200 text-gray-800 text-base font-medium rounded-2xl shadow-sm hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                            Hủy
+                        </button>
+                        <button id="confirm-delete-btn" class="px-4 py-2 bg-red-600 text-white text-base font-medium rounded-2xl shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                            Xóa
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Sử dụng các biến toàn cục được cung cấp bởi môi trường
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        console.log("Cấu hình Firebase:", firebaseConfig);
+
+        let app;
+        let auth;
+        let db;
+
+        // Khởi tạo Firebase và các biến khác sau khi trang được tải hoàn toàn
+        window.onload = function() {
+            try {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                // Ghi lại debug log cho Firestore
+                // import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+                // setLogLevel('Debug');
+                
+                authAndInit();
+            } catch (error) {
+                console.error("Lỗi khởi tạo Firebase:", error);
+                showModal("Lỗi khởi tạo ứng dụng. Vui lòng kiểm tra cấu hình Firebase của bạn.");
+            }
+        };
+
+        // UI Elements
+        const expenseForm = document.getElementById('expense-form');
+        const expensesList = document.getElementById('expenses-list');
+        const loadingMessage = document.getElementById('loading-message');
+        const emptyMessage = document.getElementById('empty-message');
+        const errorModal = document.getElementById('error-modal');
+        const errorMessage = document.getElementById('error-message');
+        const closeModalButton = document.getElementById('close-modal');
+        const confirmModal = document.getElementById('confirm-modal');
+        const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+        const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+        const totalSummaryEl = document.getElementById('total-summary');
+        const summaryCategoryEl = document.getElementById('summary-category');
+        const summaryPayerEl = document.getElementById('summary-payer');
+        const summarySourceEl = document.getElementById('summary-source');
+        const startDateInput = document.getElementById('start-date');
+        const endDateInput = document.getElementById('end-date');
+        const filterBtn = document.getElementById('filter-btn');
+        const resetFilterBtn = document.getElementById('reset-filter-btn');
+        const formTitle = document.getElementById('form-title');
+        const submitBtn = document.getElementById('submit-btn');
+        const expenseIdInput = document.getElementById('expense-id');
+        const expenseDateInput = document.getElementById('expense-date');
+        
+        let userId = null;
+        let allExpenses = []; // Dùng để lưu trữ tất cả chi tiêu
+
+        // Function to set the current date for the expense date input
+        function setCurrentDate() {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+            const dd = String(today.getDate()).padStart(2, '0');
+            const formattedDate = `${yyyy}-${mm}-${dd}`;
+            expenseDateInput.value = formattedDate;
+        }
+
+        // Function to show modal
+        function showModal(message) {
+            errorMessage.textContent = message;
+            errorModal.classList.remove('hidden');
+        }
+
+        // Handle modal close
+        closeModalButton.addEventListener('click', () => {
+            errorModal.classList.add('hidden');
+        });
+        
+        // Authentication
+        async function authAndInit() {
+            try {
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+                
+                userId = auth.currentUser.uid;
+                console.log("Đã đăng nhập thành công với User ID:", userId);
+                setupRealtimeListener();
+            } catch (error) {
+                console.error("Lỗi đăng nhập:", error);
+                showModal("Không thể đăng nhập. Vui lòng thử lại.");
+            }
+        }
+
+        // Setup real-time listener for expenses
+        function setupRealtimeListener() {
+            const expensesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/expenses`);
+            const q = query(expensesCollectionRef);
+
+            onSnapshot(q, (snapshot) => {
+                allExpenses = [];
+                snapshot.forEach((doc) => {
+                    allExpenses.push({ id: doc.id, ...doc.data() });
+                });
+                
+                if (allExpenses.length === 0) {
+                    emptyMessage.classList.remove('hidden');
+                    loadingMessage.classList.add('hidden');
+                    expensesList.innerHTML = '';
+                    totalSummaryEl.textContent = 'Tổng cộng: 0 JPY';
+                    summaryCategoryEl.innerHTML = '';
+                    summaryPayerEl.innerHTML = '';
+                    summarySourceEl.innerHTML = '';
+                } else {
+                    emptyMessage.classList.add('hidden');
+                    loadingMessage.classList.add('hidden');
+                    filterAndRender(); // Lọc và hiển thị dữ liệu ban đầu
+                }
+            }, (error) => {
+                console.error("Lỗi khi lấy dữ liệu:", error);
+                showModal("Lỗi khi tải dữ liệu chi tiêu. Vui lòng kiểm tra kết nối mạng.");
+            });
+        }
+        
+        // Filter and render expenses
+        function filterAndRender() {
+            const startDate = startDateInput.value ? new Date(startDateInput.value) : null;
+            const endDate = endDateInput.value ? new Date(endDateInput.value) : null;
+            
+            const filteredExpenses = allExpenses.filter(expense => {
+                const expenseDate = expense.createdAt.toDate();
+                let matches = true;
+
+                if (startDate && expenseDate < startDate) {
+                    matches = false;
+                }
+                
+                if (endDate) {
+                    const endOfEndDate = new Date(endDate);
+                    endOfEndDate.setHours(23, 59, 59, 999);
+                    if (expenseDate > endOfEndDate) {
+                        matches = false;
+                    }
+                }
+
+                return matches;
+            });
+
+            renderExpenses(filteredExpenses);
+            renderSummary(filteredExpenses);
+        }
+
+        // Render expenses to the UI
+        function renderExpenses(expenses) {
+            expensesList.innerHTML = ''; // Clear previous data
+            const sortedExpenses = expenses.sort((a, b) => b.createdAt.toDate() - a.createdAt.toDate());
+
+            if (sortedExpenses.length === 0) {
+                expensesList.innerHTML = '<p class="text-center text-gray-500">Không tìm thấy giao dịch nào trong khoảng thời gian này.</p>';
+                return;
+            }
+
+            sortedExpenses.forEach(expense => {
+                const expenseElement = document.createElement('div');
+                expenseElement.className = 'expense-item flex items-center justify-between p-4 bg-white rounded-xl shadow-sm border border-gray-200 relative overflow-hidden transition-transform transform hover:scale-[1.01]';
+
+                const contentDiv = document.createElement('div');
+                contentDiv.innerHTML = `
+                    <p class="font-bold text-gray-800 text-lg">${formatCurrency(expense.amount)}</p>
+                    <p class="text-sm text-gray-600">${expense.description}</p>
+                    <div class="flex flex-wrap text-xs text-gray-400 mt-1">
+                        <span class="mr-2">${expense.category}</span>
+                        <span class="mr-2">| ${expense.payer}</span>
+                        <span class="mr-2">| ${expense.source}</span>
+                        <span>| ${formatDate(expense.createdAt.toDate())}</span>
+                    </div>
+                `;
+
+                const actionsDiv = document.createElement('div');
+                actionsDiv.className = 'actions absolute right-4 top-1/2 -translate-y-1/2 flex space-x-2';
+                
+                const editBtn = document.createElement('button');
+                editBtn.className = 'bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full transition-all';
+                editBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zm-3.182 2.828L5 10.121V15h4.879l5.592-5.592-2.828-2.828z" />
+                                </svg>`;
+                editBtn.addEventListener('click', () => editExpense(expense.id, expense));
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-all';
+                deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>`;
+                deleteBtn.addEventListener('click', () => showDeleteConfirm(expense.id));
+
+                actionsDiv.appendChild(editBtn);
+                actionsDiv.appendChild(deleteBtn);
+                
+                expenseElement.appendChild(contentDiv);
+                expenseElement.appendChild(actionsDiv);
+                expensesList.appendChild(expenseElement);
+            });
+        }
+        
+        // Render summary to the UI
+        function renderSummary(expenses) {
+            const summaryByCategory = {};
+            const summaryByPayer = {};
+            const summaryBySource = {};
+            let totalAmount = 0;
+
+            expenses.forEach(expense => {
+                totalAmount += expense.amount;
+                summaryByCategory[expense.category] = (summaryByCategory[expense.category] || 0) + expense.amount;
+                summaryByPayer[expense.payer] = (summaryByPayer[expense.payer] || 0) + expense.amount;
+                summaryBySource[expense.source] = (summaryBySource[expense.source] || 0) + expense.amount;
+            });
+
+            totalSummaryEl.textContent = `Tổng cộng: ${formatCurrency(totalAmount)}`;
+            
+            // Clear previous summary data
+            summaryCategoryEl.innerHTML = '';
+            summaryPayerEl.innerHTML = '';
+            summarySourceEl.innerHTML = '';
+            
+            // Render category summary
+            for (const category in summaryByCategory) {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${category}:</strong> ${formatCurrency(summaryByCategory[category])}`;
+                summaryCategoryEl.appendChild(li);
+            }
+            
+            // Render payer summary
+            for (const payer in summaryByPayer) {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${payer}:</strong> ${formatCurrency(summaryByPayer[payer])}`;
+                summaryPayerEl.appendChild(li);
+            }
+            
+            // Render source summary
+            for (const source in summaryBySource) {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${source}:</strong> ${formatCurrency(summaryBySource[source])}`;
+                summarySourceEl.appendChild(li);
+            }
+        }
+
+        // Handle edit functionality
+        function editExpense(id, expense) {
+            formTitle.textContent = 'Cập nhật Giao dịch';
+            submitBtn.textContent = 'Cập nhật Giao dịch';
+            
+            document.getElementById('amount').value = expense.amount;
+            document.getElementById('description').value = expense.description;
+            document.getElementById('category').value = expense.category;
+            document.getElementById('payer').value = expense.payer;
+            document.getElementById('source').value = expense.source;
+            document.getElementById('expense-date').value = expense.createdAt.toDate().toISOString().split('T')[0];
+            expenseIdInput.value = id;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Show delete confirmation modal
+        function showDeleteConfirm(id) {
+            confirmModal.classList.remove('hidden');
+            confirmDeleteBtn.onclick = () => deleteExpense(id);
+            cancelDeleteBtn.onclick = () => confirmModal.classList.add('hidden');
+        }
+        
+        // Handle delete functionality
+        async function deleteExpense(id) {
+            confirmModal.classList.add('hidden');
+            try {
+                const docRef = doc(db, `artifacts/${appId}/users/${userId}/expenses`, id);
+                await deleteDoc(docRef);
+            } catch (error) {
+                console.error("Lỗi khi xóa giao dịch:", error);
+                showModal("Không thể xóa giao dịch. Vui lòng thử lại.");
+            }
+        }
+
+        // Format currency to JPY
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('ja-JP', { style: 'currency', currency: 'JPY' }).format(amount);
+        }
+
+        // Format date
+        function formatDate(date) {
+            return new Intl.DateTimeFormat('vi-VN', {
+                year: 'numeric',
+                month: 'numeric',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+            }).format(date);
+        }
+
+        // Handle form submission
+        expenseForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const amount = parseFloat(document.getElementById('amount').value);
+            const description = document.getElementById('description').value;
+            const category = document.getElementById('category').value;
+            const payer = document.getElementById('payer').value;
+            const source = document.getElementById('source').value;
+            const expenseDate = document.getElementById('expense-date').value;
+            const expenseId = expenseIdInput.value;
+           
+            if (isNaN(amount) || amount <= 0 || !description || !category || !payer || !source || !expenseDate) {
+                showModal("Vui lòng điền đầy đủ và chính xác các thông tin.");
+                return;
+            }
+            
+            const newExpenseData = {
+                amount: amount,
+                description: description,
+                category: category,
+                payer: payer,
+                source: source,
+                createdAt: new Date(expenseDate)
+            };
+
+            try {
+                if (expenseId) {
+                    // Update existing expense
+                    const docRef = doc(db, `artifacts/${appId}/users/${userId}/expenses`, expenseId);
+                    await updateDoc(docRef, newExpenseData);
+                } else {
+                    // Add new expense
+                    const expensesCollectionRef = collection(db, `artifacts/${appId}/users/${userId}/expenses`);
+                    await addDoc(expensesCollectionRef, newExpenseData);
+                }
+                
+                // Reset form to default state
+                expenseForm.reset();
+                formTitle.textContent = 'Thêm Giao dịch mới';
+                submitBtn.textContent = 'Thêm Giao dịch';
+                expenseIdInput.value = '';
+                setCurrentDate();
+
+            } catch (error) {
+                console.error("Lỗi khi lưu giao dịch:", error);
+                showModal("Không thể lưu giao dịch. Vui lòng thử lại.");
+            }
+        });
+
+        // Filter button event listener
+        filterBtn.addEventListener('click', () => {
+            filterAndRender();
+        });
+
+        // Reset filter button event listener
+        resetFilterBtn.addEventListener('click', () => {
+            startDateInput.value = '';
+            endDateInput.value = '';
+            filterAndRender();
+        });
+
+        // Initialize the app
+        setCurrentDate(); // Set current date on page load
+    </script>
+</body>
+</html>
